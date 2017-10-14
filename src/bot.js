@@ -25,8 +25,10 @@ const client = new recastai(process.env.REQUEST_TOKEN)
  * - response: Response of your server (can be a blank object if not needed: {})
  * - callback: Callback is a function called by Recast.AI hosting system when your code will be hosted
  */
-export const bot = (body, response, callback) => {
+const bot = (body, response, callback) => {
   if (body.message) {
+    console.log('././////////////////////////')
+    console.log(body.message)
     /*
     * Call the Recast.AI SDK function to handle message from Bot Connector
     * This function will:
@@ -57,7 +59,7 @@ export const bot = (body, response, callback) => {
            */
           callback(null, {
             reply: res.reply(),
-            conversationToken: res.conversationToken,
+            conversationToken: res.conversationToken
           })
         } else {
           /*
@@ -65,7 +67,7 @@ export const bot = (body, response, callback) => {
            */
           callback(null, {
             reply: 'No reply :(',
-            conversationToken: res.conversationToken,
+            conversationToken: res.conversationToken
           })
         }
       })
@@ -75,4 +77,8 @@ export const bot = (body, response, callback) => {
   } else {
     callback('No text provided')
   }
+}
+
+module.exports = {
+  bot
 }

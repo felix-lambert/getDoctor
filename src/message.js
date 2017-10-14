@@ -1,9 +1,8 @@
-/*
- * message.js
- * This file contains your bot code
- */
-
 const recastai = require('recastai')
+
+const botConversation = require('./factories/botConversation')
+const getDoctor = require('./formatServices/getDoctor')
+const defaultReply = require('./formatServices/defaultReply')
 
 // This function is the core of the bot behaviour
 const replyMessage = (message) => {
@@ -20,33 +19,51 @@ const replyMessage = (message) => {
   // Call Recast.AI SDK, through /converse route
   request.converseText(text, { conversationToken: senderId })
   .then(result => {
-    /*
-    * YOUR OWN CODE
-    * Here, you can add your own process.
-    * Ex: You can call any external API
-    * Or: Update your mongo DB
-    * etc...
-    */
-    if (result.action) {
-      console.log('The conversation action is: ', result.action.slug)
-    }
+    console.log('The conversation action is: ', result.action.slug)
+    const replyContent = result.action.reply
 
-    // If there is not any message return by Recast.AI for this current conversation
     if (!result.replies.length) {
-      message.addReply({ type: 'text', content: 'I don\'t have the reply to this yet :)' })
-    } else {
-      // Add each reply received from API to replies stack
-      result.replies.forEach(replyContent => message.addReply({ type: 'text', content: replyContent }))
+      console.log('default reply')
+      defaultReply(message)
     }
+    console.log('error is here???')
+    console.log(result)
+    if (result.action && result.action.slug === 'greetings') {
+      const conversation = botConversation(message, replyContent)
 
-    // Send all replies
-    message.reply()
-    .then(() => {
-      // Do some code after sending messages
-    })
-    .catch(err => {
-      console.error('Error while sending message to channel', err)
-    })
+      conversation.initConversation()
+      .then(() => {
+        // Do some code after sending messages
+      })
+      .catch(err => {
+        console.error('Error while sending message to channel', err)
+      })
+    } else if (result.action.slug === 'get-doctor') {
+      // Send all replies
+      getDoctor()
+      .then((res) => {
+        const data = JSON.parse(res)
+        const result = data.data.map((doctor) => `${doctor.profile.first_name} ${doctor.profile.last_name}`)
+        result.map((name) => message.addReply({ type: 'text', content: name }))
+      })
+      .catch(err => err).finally(() => {
+        message.reply()
+        .then(() => {
+          console.log('reset memory')
+          result.resetMemory()
+          // Do some code after sending messages
+          result.resetConversation()
+          .then(() => {
+            console.log('reset conversation')
+          }).catch(err => {
+            console.error('Error while resetting conversation', err)
+          })
+        })
+        .catch(err => {
+          console.error('Error while sending message to channel', err)
+        })
+      })
+    }
   })
   .catch(err => {
     console.error('Error while sending message to Recast.AI', err)

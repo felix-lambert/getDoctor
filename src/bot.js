@@ -76,7 +76,3 @@ const bot = (body, response, callback) => {
     callback('No text provided')
   }
 }
-
-module.exports = {
-  bot
-}

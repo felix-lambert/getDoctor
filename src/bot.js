@@ -27,8 +27,6 @@ const client = new recastai(process.env.REQUEST_TOKEN)
  */
 const bot = (body, response, callback) => {
   if (body.message) {
-    console.log('././////////////////////////')
-    console.log(body.message)
     /*
     * Call the Recast.AI SDK function to handle message from Bot Connector
     * This function will:

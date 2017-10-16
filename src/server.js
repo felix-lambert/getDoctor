@@ -8,11 +8,20 @@ const app = express()
 app.set('port', process.env.PORT || 5000)
 app.use(bodyParser.json())
 
-app.use('/', (request, response) => {
+// It's important to put at the end
+app.use((err, req, res, next) => {
+  console.log('it is goind inside app.use')
+  if (!res.headersSent) {
+    res.sendStatus(400)
+  }
+  return next()
+})
+
+app.use('/', (request, response, next) => {
 
   bot(request.body, response, (error, success) => {
     if (error) {
-      if (!response.headersSent) { response.sendStatus(400) }
+      next(response.sendStatus(400))
     } else if (success) {
       if (!response.headersSent) { response.status(200).json(success) }
     }

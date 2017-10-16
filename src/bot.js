@@ -77,4 +77,6 @@ export const bot = (body, response, callback) => {
   }
 }
 
-module.exports = bot
+module.exports = {
+  bot
+}
